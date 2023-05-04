@@ -5,6 +5,11 @@
 	<style>
 		body {
 			background-color: black;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
 		}
 		
 		button {
@@ -16,19 +21,33 @@
 			border-radius: 5px;
 			cursor: pointer;
 		}
+
+		#countDisplay {
+			color: white;
+			font-size: 24px;
+			margin-top: 20px;
+		}
 	</style>
 </head>
 <body>
 	<button id="clickButton">Click Me!</button>
+	<div id="countDisplay"></div>
 
 	<script>
 		var count = 0;
 		var button = document.getElementById("clickButton");
+		var countDisplay = document.getElementById("countDisplay");
 
 		button.onclick = function() {
 			count++;
-			alert("Clicked " + count + " times!");
+			countDisplay.innerHTML = "Clicked " + count + " times!";
 		};
+
+		window.onresize = function() {
+			button.style.marginTop = (window.innerHeight - button.offsetHeight) / 2 + "px";
+		};
+
+		window.onresize(); // 초기 로드 시 버튼 중앙 정렬
 	</script>
 </body>
 </html>
