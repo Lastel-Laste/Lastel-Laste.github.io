@@ -1,55 +1,88 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Click Counter</title>
-	<style>
-		body {
-			background-color: black;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			height: 100vh;
-		}
-		
-		button {
-			color: white;
-			background-color: gray;
-			font-size: 20px;
-			padding: 10px;
-			border: none;
-			border-radius: 50px;
-			cursor: pointer;
-			display: block;
-			margin: 0 auto;
-		}
+  <head>
+    <meta charset="utf-8">
+    <title>Solar System Simulation</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <script>
+      // Create the canvas and context
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
 
-		#countDisplay {
-			color: white;
-			font-size: 24px;
-			margin-top: 20px;
-		}
-	</style>
-</head>
-<body>
-	<button id="clickButton">Click Me!</button>
-	<div id="countDisplay"></div>
+      // Define the colors of the objects
+      const sunColor = 'yellow';
+      const earthColor = 'blue';
 
-	<script>
-		var count = 0;
-		var button = document.getElementById("clickButton");
-		var countDisplay = document.getElementById("countDisplay");
+      // Define the properties of the objects
+      const sunRadius = 50;
+      const earthRadius = 10;
+      const earthDistance = 200;
+      const earthVelocity = 1;
 
-		button.onclick = function() {
-			count++;
-			countDisplay.innerHTML = "Clicked " + count + " times!";
-		};
+      // Define the initial positions and velocities of the objects
+      let sunX = canvas.width / 2;
+      let sunY = canvas.height / 2;
+      let earthX = sunX + earthDistance;
+      let earthY = sunY;
+      let earthVX = 0;
+      let earthVY = -earthVelocity;
 
-		window.onresize = function() {
-			button.style.marginTop = (window.innerHeight - button.offsetHeight) / 2 + "px";
-		};
+      // Define the gravitational constant
+      const G = 0.1;
 
-		window.onresize(); // 초기 로드 시 버튼 중앙 정렬
-	</script>
-</body>
+      // Define a function to calculate the gravitational force between two objects
+      function calculateForce(m1, m2, r) {
+        return (G * m1 * m2) / (r * r);
+      }
+
+      // Define the animation loop
+      function animate() {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the sun
+        ctx.beginPath();
+        ctx.fillStyle = sunColor;
+        ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw the earth
+        ctx.beginPath();
+        ctx.fillStyle = earthColor;
+        ctx.arc(earthX, earthY, earthRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Calculate the distance between the objects
+        const dx = earthX - sunX;
+        const dy = earthY - sunY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Calculate the gravitational force between the objects
+        const force = calculateForce(sunRadius, earthRadius, distance);
+
+        // Calculate the acceleration of the earth
+        const earthAX = (force / earthRadius) * (dx / distance);
+        const earthAY = (force / earthRadius) * (dy / distance);
+
+        // Update the velocity and position of the earth
+        earthVX += earthAX;
+        earthVY += earthAY;
+        earthX += earthVX;
+        earthY += earthVY;
+
+        // Request the next animation frame
+        requestAnimationFrame(animate);
+      }
+
+      // Start the animation loop
+      animate();
+    </script>
+  </body>
 </html>
