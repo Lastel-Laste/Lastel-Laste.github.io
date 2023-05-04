@@ -1,87 +1,109 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <title>Solar System Simulation</title>
+    <title>물리엔진 웹사이트</title>
     <style>
+      /* 화면 스타일 */
+      body {
+        background-color: black;
+        margin: 0;
+      }
       canvas {
+        display: block;
         border: 1px solid black;
       }
     </style>
   </head>
   <body>
-    <canvas id="canvas" width="600" height="600"></canvas>
+    <canvas id="canvas"></canvas>
     <script>
-      // Create the canvas and context
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
+      // 캔버스 요소 가져오기
+      const canvas = document.getElementById("canvas");
 
-      // Define the colors of the objects
-      const sunColor = 'yellow';
-      const earthColor = 'blue';
+      // 캔버스 크기 설정
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
 
-      // Define the properties of the objects
-      const sunRadius = 50;
-      const earthRadius = 10;
-      const earthDistance = 200;
-      const earthVelocity = 1;
+      // 캔버스 컨텍스트 가져오기
+      const ctx = canvas.getContext("2d");
 
-      // Define the initial positions and velocities of the objects
-      let sunX = canvas.width / 2;
-      let sunY = canvas.height / 2;
-      let earthX = sunX + earthDistance;
-      let earthY = sunY;
-      let earthVX = 0;
-      let earthVY = -earthVelocity;
+      // 중력 상수 설정
+      const gravity = 0.5;
 
-      // Define the gravitational constant
-      const G = 0.1;
+      // 공 생성
+      const ball = {
+        x: canvas.width / 2, // x 좌표
+        y: canvas.height / 2, // y 좌표
+        radius: 30, // 반지름
+        color: "white", // 색상
+        velocity: { x: 0, y: 0 }, // 속도 벡터
+        draw: function () {
+          // 공 그리기
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        },
+        update: function () {
+          // 중력 적용
+          this.velocity.y += gravity;
 
-      // Define a function to calculate the gravitational force between two objects
-      function calculateForce(m1, m2, r) {
-        return (G * m1 * m2) / (r * r);
-      }
+          // 위치 갱신
+          this.x += this.velocity.x;
+          this.y += this.velocity.y;
 
-      // Define the animation loop
+          // 바닥과 충돌 검사
+          if (this.y + this.radius > canvas.height) {
+            this.y = canvas.height - this.radius;
+            this.velocity.y *= -0.8; // 비탄성 충돌
+          }
+
+          // 벽과 충돌 검사
+          if (
+            this.x - this.radius < 0 ||
+            this.x + this.radius > canvas.width
+          ) {
+            this.velocity.x *= -0.8; // 비탄성 충돌
+          }
+        },
+      };
+
+      // 공 드래그 이벤트 핸들러 등록
+      let isDragging = false;
+      canvas.addEventListener("mousedown", function (event) {
+        isDragging = true;
+        ball.velocity = { x: 0, y: 0 };
+      });
+      canvas.addEventListener("mousemove", function (event) {
+        if (isDragging) {
+          ball.x = event.clientX;
+          ball.y = event.clientY;
+        }
+      });
+      canvas.addEventListener("mouseup", function (event) {
+        isDragging = false;
+        ball.velocity = {
+          x: (event.clientX - ball.x) / 10,
+          y: (event.clientY - ball.y) / 10,
+        };
+      });
+
+      // 애니메이션 프레임 함수 정의
       function animate() {
-        // Clear the canvas
+        // 캔버스 지우기
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw the sun
-        ctx.beginPath();
-        ctx.fillStyle = sunColor;
-        ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-        ctx.fill();
+        // 공 그리기
+        ball.draw();
 
-        // Draw the earth
-        ctx.beginPath();
-        ctx.fillStyle = earthColor;
-        ctx.arc(earthX, earthY, earthRadius, 0, Math.PI * 2);
-        ctx.fill();
+        // 공 업데이트
+        ball.update();
 
-        // Calculate the distance between the objects
-        const dx = earthX - sunX;
-        const dy = earthY - sunY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        // Calculate the gravitational force between the objects
-        const force = calculateForce(sunRadius, earthRadius, distance);
-
-        // Calculate the acceleration of the earth
-        const earthAX = (force / earthRadius) * (dx / distance);
-        const earthAY = (force / earthRadius) * (dy / distance);
-
-        // Update the velocity and position of the earth
-        earthVX += earthAX;
-        earthVY += earthAY;
-        earthX += earthVX;
-        earthY += earthVY;
-
-        // Request the next animation frame
+        // 다음 프레임 예약
         requestAnimationFrame(animate);
       }
 
-      // Start the animation loop
+      // 애니메이션 시작
       animate();
     </script>
   </body>
