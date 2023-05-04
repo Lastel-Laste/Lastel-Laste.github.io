@@ -75,7 +75,7 @@
         ball.velocity = { x: 0, y: 0 };
       });
       canvas.addEventListener("mousemove", function (event) {
-        if (isDragging) {
+        if (isDragging || event.buttons === 1) {
           ball.x = event.clientX;
           ball.y = event.clientY;
           ball.velocity = { x: 0, y: 0 }; // 중력 영향 제거
