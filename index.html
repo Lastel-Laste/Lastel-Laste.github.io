@@ -50,6 +50,11 @@
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
           ctx.fillStyle = this.color;
           ctx.fill();
+          
+          // 좌표 표시
+          ctx.fillStyle = "white";
+          ctx.font = "14px Arial";
+          ctx.fillText(`x: ${this.x.toFixed(2)}, y: ${this.y.toFixed(2)}`, 10, 20);
         },
         update: function () {
           // 중력 적용
