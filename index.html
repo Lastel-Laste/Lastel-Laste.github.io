@@ -18,18 +18,25 @@
         right: 10px;
         color: white;
       }
+      #mouse-coordinates {
+        position: absolute;
+        top: 30px;
+        right: 10px;
+        color: white;
+      }
     </style>
   </head>
   <body>
     <canvas id="canvas"></canvas>
     <div id="coordinates"></div> <!-- 새로 추가한 요소 -->
+    <div id="mouse-coordinates"></div> <!-- 새로 추가한 요소 -->
     <script>
       // 캔버스 요소 가져오기
       const canvas = document.getElementById("canvas");
 
       // 캔버스 크기 설정
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = 1920;
+      canvas.height = 1080;
 
       // 캔버스 컨텍스트 가져오기
       const ctx = canvas.getContext("2d");
@@ -74,10 +81,22 @@
           }
 
           // 좌표 표시 업데이트
-          const coordinates = document.getElementById("coordinates");
-          coordinates.innerHTML = `x: ${this.x.toFixed(2)}, y: ${this.y.toFixed(2)}`;
-        },
-      };
+          const ballCoordinates = document.getElementById("coordinates");
+          ballCoordinates.innerHTML = `공 좌표: x: ${this.x.toFixed(2)}, y: ${this.y.toFixed(2)}`;
+
+          const canvasCoordinates = canvas.getBoundingClientRect();
+          const mouseX = event.clientX - canvasCoordinates.left;
+          const mouseY = event.clientY - canvasCoordinates.top;
+          const mouseCoordinates = document.getElementById("mouse-coordinates");
+          mouseCoordinates.innerHTML = `마우스 좌표: x: ${mouseX.toFixed(2)}, y: ${mouseY.toFixed(2)}`;
+      // 마우스 이벤트 리스너 추가
+      canvas.addEventListener("mousemove", function (event) {
+        const canvasCoordinates = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - canvasCoordinates.left;
+        const mouseY = event.clientY - canvasCoordinates.top;
+        const mouseCoordinates = document.getElementById("mouse-coordinates");
+        mouseCoordinates.innerHTML = `마우스 좌표: x: ${mouseX.toFixed(2)}, y: ${mouseY.toFixed(2)}`;
+      });
 
       // 애니메이션 프레임 함수 정의
       function animate() {
