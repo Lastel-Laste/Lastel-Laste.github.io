@@ -37,28 +37,28 @@
       // 중력 상수 설정
       const gravity = 0.98;
 
-      // 공 생성
-      const ball = {
-        x: canvas.width / 2, // x 좌표
-        y: canvas.height / 2, // y 좌표
-        radius: 30, // 반지름
-        color: "white", // 색상
-        velocity: { x: 0, y: 0 }, // 속도 벡터
-        isDragging: false, // 드래그 여부
-        dragOffset: { x: 0, y: 0 }, // 드래그 오프셋
-        draw: function () {
-          // 공 그리기
+      // Ball 클래스 정의
+      class Ball {
+        constructor(x, y, radius, color) {
+          this.x = x;
+          this.y = y;
+          this.radius = radius;
+          this.color = color;
+          this.velocity = { x: 0, y: 0 };
+          this.isDragging = false;
+          this.dragOffset = { x: 0, y: 0 };
+        }
+
+        draw() {
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
           ctx.fillStyle = this.color;
           ctx.fill();
 
-          // 좌표 표시
           ctx.fillStyle = "white";
           ctx.font = "14px Arial";
           ctx.fillText(`x: ${this.x.toFixed(2)}, y: ${this.y.toFixed(2)}`, 10, 20);
 
-          // 속도 벡터 그리기
           const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
           const arrowSize = Math.max(5, speed / 10);
           const arrowAngle = Math.atan2(this.velocity.y, this.velocity.x);
@@ -81,96 +81,101 @@
           ctx.lineWidth = 2;
           ctx.strokeStyle = "red";
           ctx.stroke();
-        },
-        update: function () {
-          // 중력 적용
+        }
+
+        update() {
           this.velocity.y += gravity;
 
-          // 위치 갱신
           this.x += this.velocity.x;
           this.y += this.velocity.y;
 
-          // 바닥과 충돌 검사
           if (this.y + this.radius > canvas.height) {
             this.y = canvas.height - this.radius;
-            this.velocity.y *= -0.8; // 비탄성 충돌
+            this.velocity.y *= -0.8;
           }
 
-          // 벽과 충돌 검사
           if (this.x - this.radius < 0) {
             this.x = this.radius;
-            this.velocity.x *= -0.8; // 비탄성 충돌
+            this.velocity.x *= -0.8;
           } else if (this.x + this.radius > canvas.width) {
             this.x = canvas.width - this.radius;
-            this.velocity.x *= -0.8; // 비탄성 충돌
+            this.velocity.x *= -0.8;
           }
-        },
-      };
+        }
+      }
+
+      // Ball 객체 생성
+      const balls = [
+        new Ball(canvas.width / 2, canvas.height / 2, 30, "white"),
+        new Ball(canvas.width / 3, canvas.height / 3, 20, "red"),
+        new Ball(canvas.width * 2 / 3, canvas.height * 2 / 3, 40, "blue")
+      ];
 
       // 마우스 위치
       let mouseX = 0;
       let mouseY = 0;
 
-      // 마우스 위치와 공의 위치 사이의 거리 계산
       function distance(x1, y1, x2, y2) {
         const dx = x2 - x1;
         const dy = y2 - y1;
         return Math.sqrt(dx * dx + dy * dy);
       }
 
-      // 마우스 위치 표시 이벤트 핸들러 등록
       function showCoordinates(event) {
         const coordinates = document.getElementById("coordinates");
         coordinates.innerHTML = `x: ${event.clientX.toFixed(2)}, y: ${event.clientY.toFixed(2)}`;
       }
 
-      // 마우스 이벤트 핸들러 등록
       canvas.addEventListener("mousemove", showCoordinates);
 
+      // 드래그 이벤트 등록
       canvas.addEventListener("mousedown", (event) => {
         mouseX = event.clientX;
         mouseY = event.clientY;
 
-        if (distance(ball.x, ball.y, mouseX, mouseY) < ball.radius) {
-          ball.isDragging = true;
-          ball.dragOffset.x = ball.x - mouseX;
-          ball.dragOffset.y = ball.y - mouseY;
-          ball.velocity.x = 0; // 공의 속도를 0으로 설정
-          ball.velocity.y = 0; // 공의 속도를 0으로 설정
+        for (let i = 0; i < balls.length; i++) {
+          if (distance(balls[i].x, balls[i].y, mouseX, mouseY) < balls[i].radius) {
+            balls[i].isDragging = true;
+            balls[i].dragOffset.x = balls[i].x - mouseX;
+            balls[i].dragOffset.y = balls[i].y - mouseY;
+            balls[i].velocity.x = 0;
+            balls[i].velocity.y = 0;
+            break;
+          }
         }
       });
 
       canvas.addEventListener("mousemove", (event) => {
-        if (ball.isDragging) {
-          ball.x = event.clientX + ball.dragOffset.x;
-          ball.y = event.clientY + ball.dragOffset.y;
-          ball.velocity.x = 0;
-          ball.velocity.y = 0;
+        for (let i = 0; i < balls.length; i++) {
+          if (balls[i].isDragging) {
+            balls[i].x = event.clientX + balls[i].dragOffset.x;
+            balls[i].y = event.clientY + balls[i].dragOffset.y;
+            balls[i].velocity.x = 0;
+            balls[i].velocity.y = 0;
+          }
         }
       });
 
       canvas.addEventListener("mouseup", (event) => {
-        if (ball.isDragging) {
-          ball.isDragging = false;
-
-          // 공의 순간 속도 벡터 계산
-          ball.velocity.x = (event.clientX - mouseX) / 10;
-          ball.velocity.y = (event.clientY - mouseY) / 10;
+        for (let i = 0; i < balls.length; i++) {
+          if (balls[i].isDragging) {
+            balls[i].isDragging = false;
+            balls[i].velocity.x = (event.clientX - mouseX) / 10;
+            balls[i].velocity.y = (event.clientY - mouseY) / 10;
+            break;
+          }
         }
       });
 
       // 애니메이션 프레임 함수 정의
       function animate() {
-        // 캔버스 지우기
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 공 그리기
-        ball.draw();
+        for (let i = 0; i < balls.length; i++) {
+          balls[i].draw();
+          balls[i].update();
+        }
 
-        // 공 업데이트
-        ball.update();
-
-        // 다음 프레임 예약
         requestAnimationFrame(animate);
       }
 
