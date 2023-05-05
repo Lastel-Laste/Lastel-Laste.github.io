@@ -48,24 +48,24 @@
           this.isDragging = false;
           this.dragOffset = { x: 0, y: 0 };
         }
-
+    
         draw() {
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
           ctx.fillStyle = this.color;
           ctx.fill();
-
+    
           ctx.fillStyle = "white";
           ctx.font = "14px Arial";
           ctx.fillText(`x: ${this.x.toFixed(2)}, y: ${this.y.toFixed(2)}`, 10, 20);
-
+    
           const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
           const arrowSize = Math.max(5, speed / 10);
           const arrowAngle = Math.atan2(this.velocity.y, this.velocity.x);
           const arrowLength = Math.min(speed, 50);
           const arrowX = this.x + Math.cos(arrowAngle) * (this.radius + arrowLength);
           const arrowY = this.y + Math.sin(arrowAngle) * (this.radius + arrowLength);
-
+    
           ctx.beginPath();
           ctx.moveTo(this.x, this.y);
           ctx.lineTo(arrowX, arrowY);
@@ -82,18 +82,17 @@
           ctx.strokeStyle = "red";
           ctx.stroke();
         }
-
+    
         update() {
           this.velocity.y += gravity;
-
           this.x += this.velocity.x;
           this.y += this.velocity.y;
-
+    
           if (this.y + this.radius > canvas.height) {
             this.y = canvas.height - this.radius;
             this.velocity.y *= -0.8;
           }
-
+    
           if (this.x - this.radius < 0) {
             this.x = this.radius;
             this.velocity.x *= -0.8;
@@ -106,11 +105,11 @@
 
       // Ball 객체 생성
       const balls = [
-        new Ball(canvas.width / 2, canvas.height / 2, 30, "white"),
-        new Ball(canvas.width / 3, canvas.height / 3, 20, "red"),
+        new Ball(canvas.width / 2, canvas.height / 2, 40, "white"),
+        new Ball(canvas.width / 3, canvas.height / 3, 40, "red"),
         new Ball(canvas.width * 2 / 3, canvas.height * 2 / 3, 40, "blue")
       ];
-
+      
       // 마우스 위치
       let mouseX = 0;
       let mouseY = 0;
@@ -167,6 +166,30 @@
         }
       });
 
+      function checkCollision(ball1, ball2) {
+        const dist = distance(ball1.x, ball1.y, ball2.x, ball2.y);
+        return dist <= ball1.radius + ball2.radius;
+      }
+    
+      function resolveCollision(ball1, ball2) {
+        const dx = ball2.x - ball1.x;
+        const dy = ball2.y - ball1.y;
+    
+        const dist = distance(ball1.x, ball1.y, ball2.x, ball2.y);
+    
+        if (dist == 0) return;
+    
+        const nx = dx / dist;
+        const ny = dy / dist;
+    
+        const p = 2 * (ball1.velocity.x * nx + ball1.velocity.y * ny - ball2.velocity.x * nx - ball2.velocity.y * ny) / (ball1.radius + ball2.radius);
+    
+        ball1.velocity.x -= p * ball2.radius * nx;
+        ball1.velocity.y -= p * ball2.radius * ny;
+        ball2.velocity.x += p * ball1.radius * nx;
+        ball2.velocity.y += p * ball1.radius * ny;
+      }
+    
       // 애니메이션 프레임 함수 정의
       function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -176,6 +199,16 @@
           balls[i].update();
         }
 
+        for (let i = 0; i < balls.length; i++) {
+          for (let j = i + 1; j < balls.length; j++) {
+            const dist = distance(balls[i].x, balls[i].y, balls[j].x, balls[j].y);
+            const minDist = balls[i].radius + balls[j].radius;
+            if (dist <= minDist) {
+              resolveCollision(balls[i], balls[j]);
+            }
+          }
+        }
+        
         requestAnimationFrame(animate);
       }
 
