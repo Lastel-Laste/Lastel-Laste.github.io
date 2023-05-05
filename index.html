@@ -50,7 +50,7 @@
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
           ctx.fillStyle = this.color;
           ctx.fill();
-          
+
           // 좌표 표시
           ctx.fillStyle = "white";
           ctx.font = "14px Arial";
@@ -71,23 +71,52 @@
           }
 
           // 벽과 충돌 검사
-          if (
-            this.x - this.radius < 0 ||
-            this.x + this.radius > canvas.width
-          ) {
+          if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
             this.velocity.x *= -0.8; // 비탄성 충돌
           }
         },
       };
 
-      // 마우스 위치 표시 업데이트
-      function showCoordinates(event) {
-        const coordinates = document.getElementById("coordinates");
-        coordinates.innerHTML = `x: ${event.clientX.toFixed(2)}, y: ${event.clientY.toFixed(2)}`;
+      // 마우스 위치
+      let mouseX = 0;
+      let mouseY = 0;
+
+      // 마우스 버튼 상태
+      let isMouseDown = false;
+
+      // 마우스 위치와 공의 위치 사이의 거리 계산
+      function distance(x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        return Math.sqrt(dx * dx + dy * dy);
       }
 
       // 마우스 위치 표시 이벤트 핸들러 등록
-      canvas.addEventListener("mousemove", showCoordinates);
+      canvas.addEventListener("mousemove", (event) => {
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+
+        if (isMouseDown) {
+          ball.x = mouseX;
+          ball.y = mouseY;
+          ball.velocity.x = 0;
+          ball.velocity.y = 0;
+        }
+      });
+
+      // 마우스 버튼 이벤트 핸들러 등록
+      canvas.addEventListener("mousedown", () => {
+        if (distance(ball.x, ball.y, mouseX, mouseY) < ball.radius) {
+          isMouseDown = true;
+        }
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          throwBall();
+        }
+      });
 
       // 애니메이션 프레임 함수 정의
       function animate() {
@@ -102,6 +131,16 @@
 
         // 다음 프레임 예약
         requestAnimationFrame(animate);
+      }
+
+      // 공 던지기 함수 정의
+      function throwBall() {
+        const dx = mouseX - ball.x;
+        const dy = mouseY - ball.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const speed = Math.min(distance / 5, 50);
+        ball.velocity.x = dx / distance * speed;
+        ball.velocity.y = dy / distance * speed;
       }
 
       // 애니메이션 시작
